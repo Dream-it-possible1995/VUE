@@ -15,7 +15,7 @@ module.exports = {
         target: 'http://localhost:8888',//vue要请求的api地址
         changeOrigin: true,
         pathRewrite: {
-          '^/api': '/api'//对应this.$http.get("/api/bargain/list")
+          '^/api': '/api'//对应this.$axios.get("/api/v1/normDBs")
         }
       }
     },
