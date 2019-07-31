@@ -9,8 +9,8 @@
         <el-col :span="7">
           <div class="left bg-purple">
             <el-row>
-              <div class="select bg-purple-light">
-                <el-select v-model="normDBs.name" @change="getSections()" style="margin: 1px; width: 100%;" placeholder="请选择定额库">
+              <div class="select bg-purple">
+                <el-select v-model="normDBs.id" @change="getSections(normDBs.id)" style="margin: 1px; width: 100%;" placeholder="请选择定额库">
                   <el-option
                     v-for="item in normDBs"
                     :key="item.id"
@@ -21,10 +21,13 @@
               </div>
             </el-row>
             <el-row>
-               <div class="section bg-purple-light">
+               <div class="section bg-purple" style="height: 680px">
                  <el-tree :data="sections"
                           :props="defaultProps"
-                          @node-click="handleNodeClick">
+                          node-key="id"
+                          ref="tree"
+                          highlight-current
+                          @node-click="getTreeNodeId">
                  </el-tree>
                </div>
             </el-row>
@@ -34,44 +37,32 @@
         <el-col :span="17">
           <div class="right bg-purple">
             <el-table
-              :data="normItems"
+              :data="normItems.slice((currentPage-1)*pageSize,currentPage*pageSize)"
+              stripe
+              @row-click="rowHandle"
+              height="700"
+              border
               style="width: 100%">
-              <el-table-column
-                prop="id"
-                label="id"
-                width="40">
-              </el-table-column>
-              <el-table-column
-                prop="code"
-                label="编码"
-                width="80">
-              </el-table-column>
-              <el-table-column
-                prop="name"
-                label="名称"
-                width="280">
-              </el-table-column>
-              <el-table-column
-                prop="unit"
-                label="单位">
-              </el-table-column>
-              <el-table-column
-                prop="priceNotTax"
-                label="不含税单价">
-              </el-table-column>
-              <el-table-column
-                prop="priceLabor"
-                label="人工单价">
-              </el-table-column>
-              <el-table-column
-                prop="pntmaterial"
-                label="不含税材料单价">
-              </el-table-column>
-              <el-table-column
-                prop="pntmachine"
-                label="不含税机械单价">
-              </el-table-column>
+              <el-table-column prop="id" label="id" width="40"></el-table-column>
+              <el-table-column prop="code" label="编码" width="80"></el-table-column>
+              <el-table-column prop="name" label="名称" width="280"></el-table-column>
+              <el-table-column prop="unit" label="单位"></el-table-column>
+              <el-table-column prop="priceNotTax" label="不含税单价"></el-table-column>
+              <el-table-column prop="priceLabor" label="人工单价"></el-table-column>
+              <el-table-column prop="pntmaterial" label="不含税材料单价"></el-table-column>
+              <el-table-column prop="pntmachine" label="不含税机械单价"></el-table-column>
             </el-table>
+
+            <el-pagination
+              background
+              @size-change="handleSizeChange"
+              @current-change="handleCurrentChange"
+              :current-page="currentPage"
+              :page-sizes="[10, 20, 30, 50]"
+              :page-size="pageSize"
+              layout="total, sizes, prev, pager, next, jumper"
+              :total="normItems.length">
+            </el-pagination>
           </div>
         </el-col>
 
@@ -90,6 +81,9 @@
         return {
           normDBs: [],
           sections: [],
+          total: 0,
+          currentPage: 1,
+          pageSize: 10,
           normItems: [],
           defaultProps: {
             children: 'childList',
@@ -112,22 +106,33 @@
               this.sections = res.data
             })
         },
-        handleNodeClick: function (sections) {
-          console.log("没做处理");
+        getTreeNodeId: function () {
+          var sectionId = this.$refs.tree.getCurrentKey();
+          this.getNormItems(sectionId);
+          console.log(sectionId);
         },
-        getNormItems:function() {
-          this.$axios.get('/api/v1/normitems?sectionId=2')
+        getNormItems:function(sectionId) {
+          this.$axios.get('/api/v1/normitems?sectionId='+sectionId)
             .then(res => {
               console.log(res.data)
               this.normItems = res.data
+              this.total = res.data.length
             })
         },
+        handleSizeChange: function(pageSize) { //每页条数切换
+          this.pageSize = pageSize
+          this.handleCurrentChange(this.currentPage);
+        },
+        handleCurrentChange: function(currentPage) {//页码切换
+          this.currentPage = currentPage
+        },
+        rowHandle:function(row, event, column) {
+          console.log(row, event, column)
+        },
+
       },
       mounted() {
         this.getNormDBs();
-       // this.getSections();
-        this.getNormItems();
-        this.handleNodeClick();
       }
 
     }
@@ -136,9 +141,6 @@
 <style scoped>
   .layout {
     border-style: double;
-  }
-  .bg-purple-dark {
-    background: #99a9bf;
   }
   .bg-purple {
     background: rgba(147, 188, 255, 0);

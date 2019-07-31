@@ -9,16 +9,6 @@ import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 Vue.use(ElementUI);
 
-// //引入IVIEW组件
-// import iView from 'iview';
-// import 'iview/dist/styles/iview.css';
-// Vue.use(iView);
-
-//引入vue-easytable
-// import 'vue-easytable/libs/themes-base/index.css'
-// import {VTable,VPagination} from 'vue-easytable'
-// Vue.component(VTable.name, VTable)
-// Vue.component(VPagination.name, VPagination)
 
 //引入axios
 import axios from 'axios'
