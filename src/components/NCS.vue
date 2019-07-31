@@ -39,18 +39,37 @@
             <el-table
               :data="normItems.slice((currentPage-1)*pageSize,currentPage*pageSize)"
               stripe
-              @row-click="rowHandle"
+              row-key="id"
               height="700"
               border
               style="width: 100%">
               <el-table-column prop="id" label="id" width="40"></el-table-column>
               <el-table-column prop="code" label="编码" width="80"></el-table-column>
-              <el-table-column prop="name" label="名称" width="280"></el-table-column>
+              <el-table-column prop="name" label="名称" width="250"></el-table-column>
               <el-table-column prop="unit" label="单位"></el-table-column>
               <el-table-column prop="priceNotTax" label="不含税单价"></el-table-column>
               <el-table-column prop="priceLabor" label="人工单价"></el-table-column>
               <el-table-column prop="pntmaterial" label="不含税材料单价"></el-table-column>
               <el-table-column prop="pntmachine" label="不含税机械单价"></el-table-column>
+              <el-table-column label="人材机明细">
+                <template slot-scope="scope">
+                  <el-popover
+                    placement="bottom"
+                    width="750"
+                    trigger="click">
+                    <el-table :data="lmmdetails">
+                      <el-table-column width="50" prop="kind" label="种类"></el-table-column>
+                      <el-table-column width="100" prop="code" label="编码"></el-table-column>
+                      <el-table-column width="150" prop="name" label="名称"></el-table-column>
+                      <el-table-column width="150" prop="type" label="规格型号"></el-table-column>
+                      <el-table-column prop="unit" label="单位"></el-table-column>
+                      <el-table-column prop="budget" label="预算"></el-table-column>
+                      <el-table-column prop="ntbudget" label="不含税预算"></el-table-column>
+                    </el-table>
+                    <el-button slot="reference" size="mini" @click="getLMMDetail(scope.row)">查看</el-button>
+                  </el-popover>
+                </template>
+              </el-table-column>
             </el-table>
 
             <el-pagination
@@ -85,6 +104,7 @@
           currentPage: 1,
           pageSize: 10,
           normItems: [],
+          lmmdetails: [],
           defaultProps: {
             children: 'childList',
             label: 'name'
@@ -126,8 +146,13 @@
         handleCurrentChange: function(currentPage) {//页码切换
           this.currentPage = currentPage
         },
-        rowHandle:function(row, event, column) {
-          console.log(row, event, column)
+        getLMMDetail:function(row) {
+          var normItemId = row.id;
+          this.$axios.get('/api/v1/lmmdetails?normItemId='+normItemId)
+            .then(res => {
+              console.log(res.data)
+              this.lmmdetails = res.data
+            })
         },
 
       },
